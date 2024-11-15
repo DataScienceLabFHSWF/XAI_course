@@ -1,8 +1,5 @@
 # Explainable Artificial Intelligence (xAI)
 ==========
-# Module Plan for Explainable Artificial Intelligence (XAI)
-
-## Module Description: Explainable Artificial Intelligence (XAI)
 
 ### Workload and Structure
 - **Credits:** 6
