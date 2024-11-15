@@ -1,32 +1,86 @@
 # Explainable Artificial Intelligence (xAI)
 ==========
+# Module Plan for Explainable Artificial Intelligence (XAI)
 
-- **Course**: Explainable Artificial Intelligence (xAI)
-- **Instructor**: Felix Neubürger
-- **Semester**: Summer 2025
-- **Time**: ---
-- **TAs**: ---
+## Module Description: Explainable Artificial Intelligence (XAI)
 
-- [Readings](#readings)
-- [Grading](#grading)
-- [Help](#help)
-- [Policies](#policies)
+### Workload and Structure
+- **Credits:** 6
+- **Duration:** 1 Semester
+- **Contact Hours:** 5 per week (Lectures + Exercises)
+- **Self-Study:** 115 hours
+- **Examination Type:** Portfolio
 
-# Learning goals
-<a name="learning"/>
+---
 
-# Readings #
-<a name="readings"/>
+## Curriculum (12 Lecture Sessions)
 
+1. **Introduction to Explainable AI (XAI)**
+   - Definitions and importance of XAI.
+   - Challenges of Black-Box models.
+   - Overview of Molnar's book.
 
-## Supplemental textbooks ##
+2. **Basics of Model Interpretability**
+   - Local vs. global interpretability.
+   - Feature attribution methods.
+   - Case studies.
 
-These books will deepen your understanding of the material.
+3. **Model-Agnostic Methods – Theory**
+   - Permutation Feature Importance.
+   - Partial Dependence Plots (PDPs).
+   - Iceberg methods.
 
-# Grading
-<a name="grading"/>
+4. **Model-Agnostic Methods – Practice**
+   - Implementation in Python: LIME, SHAP.
+   - Application to different models (e.g., decision trees, SVM).
 
-TBD
+5. **Intrinsic Interpretability**
+   - Linear models, decision trees, and rule-based systems.
+   - Trade-offs between complexity and interpretability.
+
+6. **Neural Networks and Deep Learning**
+   - Why are neural networks hard to interpret?
+   - Tools like Grad-CAM and Integrated Gradients.
+
+7. **Evaluation of Explainability**
+   - Metrics for evaluating explanations.
+   - Example metrics: Fidelity, Plausibility.
+
+8. **Practice: Case Studies in Model Evaluation**
+   - Evaluation of existing XAI solutions.
+   - Analysis of open-source datasets.
+
+9. **Fairness and Bias in XAI**
+   - Relationship between XAI and fairness.
+   - Examples and tools for bias reduction.
+
+10. **Ethical Aspects of XAI**
+    - Responsibility in using XAI.
+    - Societal impacts of explanation models.
+
+11. **XAI in Practice**
+    - Integrating XAI into the development process.
+    - Application of frameworks (e.g., TensorFlow Explain).
+
+12. **The Future of XAI**
+    - Trends and open research questions.
+    - Discussion and summary.
+
+---
+
+## Practical Exercises
+- Comprise 30% of the contact hours.
+- Python-based frameworks: SHAP, LIME.
+- Work on real datasets (e.g., UCI ML Repository).
+
+---
+
+## Learning Outcomes
+1. Understand the fundamental principles and challenges of XAI.
+2. Ability to develop and evaluate interpretable models.
+3. Hands-on experience with tools and frameworks.
+4. Awareness of ethical and societal implications.
+
 
 ## Office hours
 
