@@ -4,7 +4,7 @@
 ### Workload and Structure
 - **Credits:** 6
 - **Duration:** 1 Semester
-- **Contact Hours:** 5 per week (Lectures + Exercises)
+- **Contact Hours:** 4 per week (Lectures + exercise)
 - **Self-Study:** 115 hours
 - **Examination Type:** Portfolio
 
