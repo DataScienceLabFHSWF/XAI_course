@@ -1,6 +1,3 @@
-[submodule "XAI_Exercises"]
-	path = XAI_Exercises
-	url = git@github.com:FNeubuerger/XAI_Exercises.git
 [submodule "XAI_Slides"]
 	path = XAI_Slides
 	url = git@github.com:FNeubuerger/XAI_Slides.git
