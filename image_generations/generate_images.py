@@ -355,7 +355,7 @@ def plot_saliency_map():
         model = model.to(device)  # Move model to GPU if available
         criterion = criterion.to(device)  # Move criterion to GPU if available
 
-        for epoch in range(5):  # Only 5 epochs for quick fine-tuning
+        for epoch in range(1):  # Only 1 epochs for quick fine-tuning
             model.train()
             epoch_loss = 0.0
             with tqdm(cifar10_train, desc=f"Epoch {epoch + 1}/5", unit="batch") as progress_bar:
@@ -422,46 +422,80 @@ def plot_integrated_gradients():
     Raises:
         FileNotFoundError: If the "images" directory does not exist.
     """
-    # Load MNIST dataset
-    (X_train, y_train), _ = mnist.load_data()
-    X_train = X_train.reshape(-1, 28, 28, 1) / 255.0
-    y_train = to_categorical(y_train)
+    # Load CIFAR-10 dataset using PyTorch utilities
+    cifar10_train = torch.utils.data.DataLoader(
+        torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transforms.ToTensor()),
+        batch_size=256, shuffle=False
+    )
 
-    # Define a simple CNN
-    model = Sequential([
-        Conv2D(8, (3, 3), activation='relu', input_shape=(28, 28, 1)),
-        Flatten(),
-        Dense(10, activation='softmax')
+    # Get the first image and label from the dataset
+    sample_image, y_train = next(iter(cifar10_train))
+
+    # Define preprocessing transformations
+    preprocess = transforms.Compose([
+        transforms.Resize((224, 224)),  # Resize to match ResNet input size
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    model.fit(X_train, y_train, epochs=1, batch_size=128, verbose=0)
 
-    # Convert Keras model to PyTorch
-    class PyTorchModel(torch.nn.Module):
-        def __init__(self, keras_model):
-            super(PyTorchModel, self).__init__()
-            self.keras_model = keras_model
+    # Convert the sample image to a PIL Image and preprocess it
+    sample_image = preprocess(sample_image.squeeze(0)).unsqueeze(0)
 
-        def forward(self, x):
-            x = x.permute(0, 2, 3, 1).detach().numpy()  # Convert to NHWC for Keras
-            preds = self.keras_model.predict(x)
-            return torch.tensor(preds)
+    # Define a pre-trained model (e.g., ResNet18) and fine-tune it on CIFAR-10
+    model = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+    model.fc = torch.nn.Linear(model.fc.in_features, 10)  # Adjust the final layer for CIFAR-10 (10 classes)
+    model = model.eval()  # Set model to evaluation mode
 
-    pytorch_model = PyTorchModel(model)
+    # Check if the fine-tuned weights exist
+    if not os.path.exists('cifar10_resnet18.pth'):
+        # Fine-tune the model on CIFAR-10
+        criterion = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    # Prepare a sample image
-    sample_image = torch.tensor(X_train[0:1].transpose(0, 3, 1, 2), dtype=torch.float32)  # Convert to NCHW
-    target_class = torch.argmax(torch.tensor(y_train[0]))
+        # Training loop (quick fine-tuning for a few epochs)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print("Using device:", device)
+        model = model.to(device)  # Move model to GPU if available
+        criterion = criterion.to(device)  # Move criterion to GPU if available
 
-    # Compute Integrated Gradients
-    ig = IntegratedGradients(pytorch_model)
+        for epoch in range(1):  # Only 1 epochs for quick fine-tuning
+            model.train()
+            epoch_loss = 0.0
+            with tqdm(cifar10_train, desc=f"Epoch {epoch + 1}/5", unit="batch") as progress_bar:
+                for images, labels in progress_bar:
+                    images = preprocess(images).to(device)  # Preprocess and move to device
+                    labels = labels.to(device)
+                    optimizer.zero_grad()
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
+                    epoch_loss += loss.item()
+                    progress_bar.set_postfix(loss=epoch_loss / (progress_bar.n + 1))
+        # Save the fine-tuned weights
+        torch.save(model.state_dict(), 'cifar10_resnet18.pth')
+
+    # Load the fine-tuned weights
+    model.load_state_dict(torch.load('cifar10_resnet18.pth'))
+
+    # Convert labels to PyTorch tensor
+    y_train = torch.tensor(y_train, dtype=torch.long).squeeze()
+
+    # Compute Integrated Gradients using Captum
+    ig = IntegratedGradients(model)
+    sample_image.requires_grad_()  # Enable gradients for the input
+    output = model(sample_image)
+    target_class = torch.argmax(output, dim=1)
     attributions = ig.attribute(sample_image, target=target_class.item(), n_steps=50).squeeze().detach().numpy()
 
     # Plot the original image and attributions
     fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-    axes[0].imshow(sample_image.squeeze().permute(1, 2, 0).numpy(), cmap='gray')
-    axes[0].set_title("Original Image")
+
+    # Original image
+    axes[0].imshow(sample_image.squeeze().permute(1, 2, 0).detach().numpy() * 0.5 + 0.5)  # Denormalize for visualization
+    axes[0].set_title(f"Original Image (Label: {cifar10_train.dataset.classes[y_train.item()]})")
     axes[0].axis('off')
+
+    # Integrated Gradients
     axes[1].imshow(attributions.mean(axis=0), cmap='hot')
     axes[1].set_title("Integrated Gradients")
     axes[1].axis('off')
