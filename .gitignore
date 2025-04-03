@@ -33,3 +33,15 @@
 *.swp
 *.swo
 *.tmp
+
+# minted files
+tex/_minted/
+
+# Jupyter Notebook files
+.ipynb_checkpoints/
+
+# Virtual environment directories
+venv/
+.env/
+*.venv/
+xai/

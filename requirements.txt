@@ -1,0 +1,13 @@
+numpy
+pandas
+matplotlib
+scikit-learn
+tensorflow
+torch
+seaborn
+jupyter
+notebook
+xgboost
+shap
+lime
+quantus
