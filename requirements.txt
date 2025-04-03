@@ -3,7 +3,10 @@ numpy
 pandas
 scikit-learn
 tensorflow
+--extra-index-url https://download.pytorch.org/whl/cu118
 torch
+torchvision
+torchaudio
 seaborn
 jupyter
 notebook
@@ -13,5 +16,5 @@ lime
 quantus
 ipykernel
 torchcam
-torchvision
-torchaudio
+tf-keras
+transformers

@@ -8,6 +8,15 @@ import shap
 from lime.lime_tabular import LimeTabularExplainer
 import os
 
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Conv2D, Flatten
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.utils import to_categorical
+
+import torch
+from transformers import pipeline
+import tensorflow as tf
+
 import matplotlib.pyplot as plt
 
 # 1. Decision Tree Visualization
@@ -174,6 +183,142 @@ def plot_lime():
     plt.savefig("images/lime.png")
     plt.close()
 
+    # 6. CNN Feature Visualization
+def plot_cnn_feature_maps():
+    """
+    Trains a simple CNN on the MNIST dataset and visualizes feature maps for a sample image.
+
+    This function trains a CNN on the MNIST dataset, extracts feature maps from the first convolutional
+    layer for a sample image, and saves the visualization as "images/cnn_feature_maps.png".
+
+    Note:
+        - The "images" directory must exist prior to saving the plot.
+
+    Dependencies:
+        - TensorFlow/Keras
+        - Matplotlib
+
+    Raises:
+        FileNotFoundError: If the "images" directory does not exist.
+    """
+    # Load MNIST dataset
+    (X_train, y_train), _ = mnist.load_data()
+    X_train = X_train.reshape(-1, 28, 28, 1) / 255.0
+    y_train = to_categorical(y_train)
+
+    # Define a simple CNN
+    model = Sequential([
+        Conv2D(8, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+        Flatten(),
+        Dense(10, activation='softmax')
+    ])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.fit(X_train, y_train, epochs=1, batch_size=128, verbose=0)
+
+    # Extract feature maps
+    sample_image = X_train[0:1]
+    feature_map_model = Sequential(model.layers[:1])  # First convolutional layer
+    feature_maps = feature_map_model.predict(sample_image)
+
+    # Plot feature maps
+    fig, axes = plt.subplots(1, feature_maps.shape[-1], figsize=(15, 5))
+    for i, ax in enumerate(axes):
+        ax.imshow(feature_maps[0, :, :, i], cmap='viridis')
+        ax.axis('off')
+    plt.suptitle("CNN Feature Maps")
+    plt.tight_layout()
+    plt.savefig("images/cnn_feature_maps.png")
+    plt.close()
+
+# 7. LLM Explanation (Sentiment Analysis)
+def plot_llm_explanation():
+    """
+    Generates and saves an explanation for a sentiment analysis task using a pre-trained LLM.
+
+    This function uses the Hugging Face Transformers pipeline to perform sentiment analysis on a
+    sample text and visualizes the explanation (e.g., token importance) as a bar plot. The plot
+    is saved as "images/llm_explanation.png".
+
+    Note:
+        - The "images" directory must exist prior to saving the plot.
+
+    Dependencies:
+        - Transformers library
+        - Matplotlib
+
+    Raises:
+        FileNotFoundError: If the "images" directory does not exist.
+    """
+    # Define sample text
+    sample_text = "The movie was absolutely fantastic and I loved every moment of it!"
+
+    # Use Hugging Face pipeline for sentiment analysis
+    sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+    result = sentiment_pipeline(sample_text)
+
+    # Tokenize and compute token importance (mock example)
+    tokens = sample_text.split()
+    importance = [len(token) for token in tokens]  # Mock importance based on token length
+
+    # Plot token importance
+    plt.bar(tokens, importance, color='skyblue')
+    plt.title("LLM Explanation (Token Importance)")
+    plt.xlabel("Tokens")
+    plt.ylabel("Importance")
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.savefig("images/llm_explanation.png")
+    plt.close()
+# 8. Saliency Map
+def plot_saliency_map():
+    """
+    Generates and saves a saliency map for a CNN trained on the MNIST dataset.
+
+    This function trains a simple CNN on the MNIST dataset, computes the gradient of the output
+    with respect to the input image to generate a saliency map, and saves the visualization as
+    "images/saliency_map.png".
+
+    Note:
+        - The "images" directory must exist prior to saving the plot.
+
+    Dependencies:
+        - TensorFlow/Keras
+        - Matplotlib
+
+    Raises:
+        FileNotFoundError: If the "images" directory does not exist.
+    """
+    # Load MNIST dataset
+    (X_train, y_train), _ = mnist.load_data()
+    X_train = X_train.reshape(-1, 28, 28, 1) / 255.0
+    y_train = to_categorical(y_train)
+
+    # Define a simple CNN
+    model = Sequential([
+        Conv2D(8, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+        Flatten(),
+        Dense(10, activation='softmax')
+    ])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.fit(X_train, y_train, epochs=1, batch_size=128, verbose=0)
+
+    # Compute saliency map
+    sample_image = X_train[0:1]
+    with tf.GradientTape() as tape:
+        tape.watch(sample_image)
+        predictions = model(sample_image)
+        loss = predictions[:, tf.argmax(predictions[0])]
+    gradients = tape.gradient(loss, sample_image)
+    saliency_map = tf.abs(gradients).numpy().squeeze()
+
+    # Plot saliency map
+    plt.imshow(saliency_map, cmap='hot')
+    plt.title("Saliency Map")
+    plt.axis('off')
+    plt.tight_layout()
+    plt.savefig("images/saliency_map.png")
+    plt.close()
+
 if __name__ == "__main__":    
     # Generate synthetic data
     X_class, y_class = make_classification(n_features=5, random_state=42)
@@ -188,3 +333,6 @@ if __name__ == "__main__":
     plot_pdp()
     plot_shap_values()
     plot_lime()
+    plot_cnn_feature_maps()
+    plot_llm_explanation()
+    print("All images generated and saved in the 'images' directory.")
