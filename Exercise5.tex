@@ -1,7 +1,7 @@
 \chapter*{Exercise 6}
 \section*{Explainable AI: LLM Interpretability with Llama2}
 
-\section*{Exercise 1: Setup \& Baseline Attribution (30 mins)}
+\section*{Exercise 1: Setup \& Baseline Attribution}
 \textbf{Tools:} Captum, HuggingFace Transformers
 
 \begin{enumerate}
@@ -25,7 +25,7 @@ print(tokenizer.decode(outputs[0]))
 \end{minted}
 \end{enumerate}
 
-\section*{Exercise 2: Feature Attribution (45 mins)}
+\section*{Exercise 2: Feature Attribution}
 \textbf{Method:} Layer Integrated Gradients
 
 \begin{enumerate}
@@ -57,15 +57,10 @@ plt.show()
 \end{minted}
 \end{enumerate}
 
-\section*{Exercise 3: Comparative Analysis (15 mins)}
+\section*{Exercise 3: Comparative Analysis}
 \begin{itemize}
-\item Compare results with different baselines:
-\begin{minted}{python}
-baselines = [
-    tokenizer(" ", return_tensors="pt").input_ids,  # Single space
-    tokenizer("<unk>", return_tensors="pt").input_ids  # Unknown token
-]
-\end{minted}
+\item Compare different attributions following the \url{https://captum.ai/tutorials/Llama2_LLM_Attribution} :
+
 \item Discuss stability of attributions
 \end{itemize}
 
@@ -86,9 +81,9 @@ baselines = [
 
 \section*{Advanced Tasks (Bonus)}
 \begin{itemize}
-\item Implement attention head visualization
+\item Implement attention head visualization yourself
 \item Compare with \texttt{FeatureAblation} method
-\item Calculate Quantus metrics for attribution consistency
+
 \end{itemize}
 
 \section*{Recommended Resources}

@@ -1,5 +1,5 @@
 \chapter*{Exercise Sheet 5}
-\section*{Exercise 1: Basic Attention Visualization (45 mins)}
+\section*{Exercise 1: Basic Attention Visualization}
 \textbf{Tools:} BERTviz \& HuggingFace Transformers
 
 \begin{enumerate}
@@ -33,7 +33,7 @@ head_view(attention, tokenizer.convert_ids_to_tokens(inputs[0]))
 \end{itemize}
 \end{enumerate}
 
-\section*{Exercise 2: Feature Attribution with Captum (45 mins)}
+\section*{Exercise 2: Feature Attribution with Captum }
 \textbf{Resources:} \href{https://captum.ai/tutorials/Bert_SQUAD_Interpret}{Captum BERT Tutorial}
 
 \begin{enumerate}
@@ -63,17 +63,6 @@ ax2.imshow(attributions[0].sum(dim=-1).detach().numpy())
 \item What are the limitations of visualizing attention as explanation?
 \item When would you prefer attention visualization over gradient-based methods?
 \end{itemize}
-
-\section*{Time Management Guide}
-\begin{tabular}{|l|l|}
-\hline
-\textbf{Task} & \textbf{Time} \\ \hline
-Environment setup & 10 mins \\ \hline
-Basic attention visualization & 25 mins \\ \hline
-Captum implementation & 30 mins \\ \hline
-Comparison \& analysis & 20 mins \\ \hline
-Documentation & 5 mins \\ \hline
-\end{tabular}
 
 \section*{Advanced Tasks (Bonus)}
 \begin{itemize}
