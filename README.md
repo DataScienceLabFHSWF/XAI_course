@@ -6,8 +6,7 @@ Inside, you'll find:
 
 - Lecture Notes & Slides summarizing key xAI techniques [Explainable AI (xAI) Course – Slides](https://github.com/FNeubuerger/XAI_Slides/).
 
-  
-- Hands-on Notebooks demonstrating real-world interpretability methods
+- Hands-on Notebooks demonstrating real-world interpretability methods [Explainable AI (xAI) Course – Exercises](https://github.com/FNeubuerger/XAI_Exercises/).
   
 - Code Implementations of SHAP, LIME, Feature Importance, and more
 
