@@ -1,4 +1,18 @@
 # Explainable Artificial Intelligence (xAI)
+
+This repository serves as a companion to our Explainable AI (xAI) Course, heavily inspired by Christoph Molnar’s Interpretable Machine Learning book. The course covers core concepts, methods, and tools for understanding and interpreting machine learning models, ensuring transparency, trust, and fairness in AI systems.
+
+Inside, you'll find:
+
+    Lecture Notes & Slides summarizing key xAI techniques
+
+    Hands-on Notebooks demonstrating real-world interpretability methods
+
+    Code Implementations of SHAP, LIME, Feature Importance, and more
+
+    Resources & Further Readings to deepen your understanding
+
+Whether you're a researcher, practitioner, or enthusiast, this repository will help you master the art of making machine learning models more interpretable and accountable. 🚀
 ==========
 
 ### Workload and Structure
