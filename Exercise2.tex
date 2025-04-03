@@ -1,0 +1,98 @@
+\chapter*{Exercise Sheet 3}
+\section*{Exercise 1: Grad-CAM Implementation (60 mins)}
+\textbf{Dataset:} CIFAR-10 \quad \textbf{Framework:} PyTorch
+
+\begin{enumerate}
+\item Load pretrained CNN and dataset (15 mins)
+\begin{minted}{python}
+import torch
+from torchvision import datasets, transforms, models
+
+# Preprocess pipeline
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
+
+# Load model
+model = models.resnet18(pretrained=True)
+model.fc = torch.nn.Linear(512, 10)  # Adapt for CIFAR-10
+model.load_state_dict(torch.load('cifar10_resnet18.pth'))
+\end{minted}
+
+\item Implement Grad-CAM (30 mins)
+\begin{minted}{python}
+class GradCAM:
+    def __init__(self, model, target_layer):
+        self.model = model
+        self.gradients = None
+        self.activations = None
+        target_layer.register_forward_hook(self.save_activations)
+        target_layer.register_backward_hook(self.save_gradients)
+    
+    def save_activations(self, module, input, output):
+        self.activations = output.detach()
+    
+    def save_gradients(self, module, grad_input, grad_output):
+        self.gradients = grad_output[0].detach()
+    
+    def __call__(self, x):
+        # Your implementation here
+        # Steps: forward pass, backward pass, 
+        # compute weights, generate heatmap
+        return heatmap
+\end{minted}
+
+\item Visualize results (15 mins)
+\begin{minted}{python}
+import matplotlib.pyplot as plt
+
+def overlay_heatmap(img, heatmap):
+    plt.imshow(img.permute(1,2,0))
+    plt.imshow(heatmap, alpha=0.5, cmap='jet')
+    plt.show()
+\end{minted}
+\end{enumerate}
+
+\section*{Exercise 2: Quantitative Analysis (30 mins)}
+\textbf{Tools:} Quantus \quad \textbf{Metrics:} Faithfulness, Local Lipschitz
+
+\begin{enumerate}
+\item Evaluate explanation quality
+\begin{minted}{python}
+from quantus import FaithfulnessEstimate
+
+# Generate explanations for 10 samples
+def generate_explanations(model, dataloader):
+    # Your implementation
+    
+# Calculate metrics
+faithfulness = FaithfulnessEstimate()
+scores = faithfulness(model, inputs, labels, explanations)
+\end{minted}
+
+\item Analyze metric results (10 mins)
+\end{enumerate}
+
+\section*{Theoretical Questions}
+\begin{itemize}
+\item Why do we use the last convolutional layer for Grad-CAM?
+\item How does image resizing affect interpretation reliability?
+\item Compare Grad-CAM with occlusion sensitivity
+\end{itemize}
+
+\section*{Hints \& Tips}
+\begin{itemize}
+\item Use hook ordering: forward then backward
+\item Normalize heatmap between 0-1 for visualization
+\item Try samples from different classes
+\item Use \texttt{model.eval()} for consistent results
+\end{itemize}
+
+\section*{Recommended Resources}
+\begin{itemize}
+\item \href{https://arxiv.org/abs/1610.02391}{Grad-CAM Paper}
+\item \href{https://github.com/utkuozbulak/pytorch-cnn-visualizations}{PyTorch Visualization Toolkit}
+\item \href{https://quantus.readthedocs.io/}{Quantus Documentation}
+\end{itemize}

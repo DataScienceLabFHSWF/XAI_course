@@ -1,0 +1,20 @@
+\chapter*{Exercise Sheet 4}
+\section*{Exercise 3: Attention Visualization (60 mins)}
+\textbf{Model:} DistilBERT from HuggingFace
+
+\begin{enumerate}
+\item Analyze attention patterns in sentiment analysis (30 mins)
+\item \url{https://github.com/jessevig/bertviz}
+\begin{minted}{python}
+from bertviz import head_view
+head_view(attention, tokens)
+\end{minted}
+
+\item Identify heads focusing on negation words (30 mins)
+\end{enumerate}
+
+\section*{Exercise 2: Feature Attribution (30 mins)}
+\begin{enumerate}
+\item Use Integrated Gradients on text input (20 mins)
+\item Visualize token contributions (10 mins)
+\end{enumerate}
