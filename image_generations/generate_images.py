@@ -1,23 +1,38 @@
-import numpy as np
-from sklearn.tree import DecisionTreeClassifier, plot_tree
-from sklearn.linear_model import LinearRegression
-from sklearn.inspection import permutation_importance, PartialDependenceDisplay
-from sklearn.datasets import make_classification, make_regression
-from sklearn.ensemble import RandomForestClassifier
-import shap
-from lime.lime_tabular import LimeTabularExplainer
 import os
+import numpy as np
+import matplotlib.pyplot as plt
 
+# Scikit-learn imports
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.datasets import make_classification, make_regression
+from sklearn.inspection import PartialDependenceDisplay
+from lime.lime_tabular import LimeTabularExplainer
+
+# SHAP library
+import shap
+
+# TensorFlow/Keras imports
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Flatten
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.utils import to_categorical
 
+# PyTorch imports
 import torch
-from transformers import pipeline
-import tensorflow as tf
+import torchvision
+import torchvision.transforms as transforms
+import torchvision.models as models
+from torchvision.models import ResNet18_Weights
+from captum.attr import Saliency
 
-import matplotlib.pyplot as plt
+# Hugging Face Transformers
+from transformers import pipeline
+
+# PIL for image handling
+from PIL import Image
+
+from tqdm import tqdm  # Import tqdm for progress tracking
 
 # 1. Decision Tree Visualization
 def plot_decision_tree():
@@ -41,6 +56,9 @@ def plot_decision_tree():
         - sklearn.tree.DecisionTreeClassifier
         - sklearn.tree.plot_tree
     """
+    # Generate synthetic data
+    X_class, y_class = make_classification(n_features=5, random_state=42)
+
     clf = DecisionTreeClassifier(max_depth=3, random_state=42)
     clf.fit(X_class, y_class)
     plt.figure(figsize=(10, 6))
@@ -73,6 +91,10 @@ def plot_feature_importance():
         - FileNotFoundError: If the "images" directory does not exist.
 
     """
+    # Generate synthetic data
+    X_class, y_class = make_classification(n_features=5, random_state=42)
+    X_reg, y_reg = make_regression(n_features=5, noise=0.1, random_state=42)
+
     rf = RandomForestClassifier(random_state=42)
     rf.fit(X_class, y_class)
     importance = rf.feature_importances_
@@ -104,6 +126,8 @@ def plot_pdp():
         FileNotFoundError: If the "images" directory does not exist.
 
     """
+    # Generate synthetic data
+    X_class, y_class = make_classification(n_features=5, random_state=42)
     rf = RandomForestClassifier(random_state=42)
     rf.fit(X_class, y_class)
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -138,6 +162,8 @@ def plot_shap_values():
         FileNotFoundError: If the "images" directory does not exist.
 
     """
+    # Generate synthetic data
+    X_class, y_class = make_classification(n_features=5, random_state=42)
     rf = RandomForestClassifier(random_state=42)
     rf.fit(X_class, y_class)
     explainer = shap.TreeExplainer(rf)
@@ -172,6 +198,9 @@ def plot_lime():
     Saves:
         A PNG image of the LIME explanation plot at "images/lime.png".
     """
+    # Generate synthetic data
+    X_class, y_class = make_classification(n_features=5, random_state=42)
+    
     lime_explainer = LimeTabularExplainer(X_class, feature_names=[f"Feature {i}" for i in range(X_class.shape[1])],
                                           class_names=["Class 0", "Class 1"], discretize_continuous=True)
     rf = RandomForestClassifier(random_state=42)
@@ -269,6 +298,7 @@ def plot_llm_explanation():
     plt.tight_layout()
     plt.savefig("images/llm_explanation.png")
     plt.close()
+
 # 8. Saliency Map
 def plot_saliency_map():
     """
@@ -288,51 +318,125 @@ def plot_saliency_map():
     Raises:
         FileNotFoundError: If the "images" directory does not exist.
     """
-    # Load MNIST dataset
-    (X_train, y_train), _ = mnist.load_data()
-    X_train = X_train.reshape(-1, 28, 28, 1) / 255.0
-    y_train = to_categorical(y_train)
 
-    # Define a simple CNN
-    model = Sequential([
-        Conv2D(8, (3, 3), activation='relu', input_shape=(28, 28, 1)),
-        Flatten(),
-        Dense(10, activation='softmax')
+    # Load CIFAR-10 dataset using PyTorch utilities
+    cifar10_train = torch.utils.data.DataLoader(
+        torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transforms.ToTensor()),
+        batch_size=1, shuffle=False
+    )
+
+    # Get the first image and label from the dataset
+    sample_image, y_train = next(iter(cifar10_train))
+
+    # Define preprocessing transformations
+    preprocess = transforms.Compose([
+        transforms.Resize((224, 224)),  # Resize to match ResNet input size
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    model.fit(X_train, y_train, epochs=1, batch_size=128, verbose=0)
 
-    # Compute saliency map
-    sample_image = X_train[0:1]
-    with tf.GradientTape() as tape:
-        tape.watch(sample_image)
-        predictions = model(sample_image)
-        loss = predictions[:, tf.argmax(predictions[0])]
-    gradients = tape.gradient(loss, sample_image)
-    saliency_map = tf.abs(gradients).numpy().squeeze()
+    # Convert the sample image to a PIL Image and preprocess it
+    sample_image = preprocess(sample_image.squeeze(0)).unsqueeze(0)
+    # Define a pre-trained model (e.g., ResNet18) and fine-tune it on CIFAR-10
 
-    # Plot saliency map
-    plt.imshow(saliency_map, cmap='hot')
-    plt.title("Saliency Map")
-    plt.axis('off')
+    model = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+    model.fc = torch.nn.Linear(model.fc.in_features, 10)  # Adjust the final layer for CIFAR-10 (10 classes)
+    model = model.eval()  # Set model to evaluation mode
+
+    # Check if the fine-tuned weights exist
+    if not os.path.exists('cifar10_resnet18.pth'):
+        # Fine-tune the model on CIFAR-10
+        criterion = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+        # Training loop (quick fine-tuning for a few epochs)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print("Using device:", device)
+        model = model.to(device)  # Move model to GPU if available
+        criterion = criterion.to(device)  # Move criterion to GPU if available
+
+        for epoch in range(5):  # Only 5 epochs for quick fine-tuning
+            model.train()
+            epoch_loss = 0.0
+            with tqdm(cifar10_train, desc=f"Epoch {epoch + 1}/5", unit="batch") as progress_bar:
+                for images, labels in progress_bar:
+                    images = preprocess(images).to(device)  # Preprocess and move to device
+                    labels = labels.to(device)
+                    optimizer.zero_grad()
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
+                    epoch_loss += loss.item()
+                    progress_bar.set_postfix(loss=epoch_loss / (progress_bar.n + 1))
+        # Save the fine-tuned weights
+        torch.save(model.state_dict(), 'cifar10_resnet18.pth')
+
+    # Load the fine-tuned weights
+    model.load_state_dict(torch.load('cifar10_resnet18.pth'))
+
+    # Convert labels to PyTorch tensor
+    y_train = torch.tensor(y_train, dtype=torch.long).squeeze()
+
+    # Compute saliency map using Captum
+    saliency = Saliency(model)
+    sample_image.requires_grad_()  # Enable gradients for the input
+    output = model(sample_image)
+    target_class = torch.argmax(
+        output, dim=1
+    )
+    saliency_map = saliency.attribute(sample_image, target=target_class.item()).squeeze().detach().numpy()
+
+    # Plot the image and saliency map side by side
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+
+    # Original image
+    axes[0].imshow(sample_image.squeeze().permute(1, 2, 0).detach().numpy() * 0.5 + 0.5)  # Denormalize for visualization
+    axes[0].set_title(f"Original Image (Label: {cifar10_train.dataset.classes[y_train.item()]})")
+    axes[0].axis('off')
+    # Saliency map
+    axes[1].imshow(saliency_map.mean(axis=0), cmap='hot')
+    axes[1].set_title("Saliency Map")
+    axes[1].axis('off')
+
     plt.tight_layout()
     plt.savefig("images/saliency_map.png")
     plt.close()
 
-if __name__ == "__main__":    
-    # Generate synthetic data
-    X_class, y_class = make_classification(n_features=5, random_state=42)
-    X_reg, y_reg = make_regression(n_features=5, noise=0.1, random_state=42)
-    
+if __name__ == "__main__":  
     # Create directory for saving images
     output_dir = "images"
     os.makedirs(output_dir, exist_ok=True)
     # Generate all images
+    print("Generating Decision Tree visualization...")
     plot_decision_tree()
+    print("Decision Tree visualization saved.")
+
+    print("Generating Feature Importance plot...")
     plot_feature_importance()
+    print("Feature Importance plot saved.")
+
+    print("Generating Partial Dependence Plot (PDP)...")
     plot_pdp()
+    print("Partial Dependence Plot saved.")
+
+    print("Generating SHAP Values plot...")
     plot_shap_values()
+    print("SHAP Values plot saved.")
+
+    print("Generating LIME explanation plot...")
     plot_lime()
+    print("LIME explanation plot saved.")
+
+    print("Generating CNN Feature Maps visualization...")
     plot_cnn_feature_maps()
+    print("CNN Feature Maps visualization saved.")
+
+    print("Generating LLM Explanation plot...")
     plot_llm_explanation()
+    print("LLM Explanation plot saved.")
+
+    print("Generating Saliency Map...")
+    plot_saliency_map()
+    print("Saliency Map saved.")
+    # Print completion message
     print("All images generated and saved in the 'images' directory.")

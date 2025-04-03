@@ -45,3 +45,6 @@ venv/
 .env/
 *.venv/
 xai/
+# .DS_Store files
+.DS_Store
+data
