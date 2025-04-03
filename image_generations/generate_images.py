@@ -13,10 +13,16 @@ from lime.lime_tabular import LimeTabularExplainer
 import shap
 
 # TensorFlow/Keras imports
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Flatten
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.utils import to_categorical
+# Suppress TensorFlow warnings
+tf.get_logger().setLevel('ERROR')
+# Suppress TensorFlow oneDNN warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 # PyTorch imports
 import torch
@@ -31,6 +37,7 @@ from transformers import pipeline
 
 # PIL for image handling
 from PIL import Image
+
 
 
 from tqdm import tqdm  # Import tqdm for progress tracking
@@ -238,7 +245,8 @@ def plot_cnn_feature_maps():
 
     # Define a simple CNN
     model = Sequential([
-        Conv2D(8, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+        tf.keras.Input(shape=(28, 28, 1)),
+        Conv2D(8, (3, 3), activation='relu'),
         Flatten(),
         Dense(10, activation='softmax')
     ])
@@ -319,7 +327,6 @@ def plot_saliency_map():
     Raises:
         FileNotFoundError: If the "images" directory does not exist.
     """
-
     # Load CIFAR-10 dataset using PyTorch utilities
     cifar10_train = torch.utils.data.DataLoader(
         torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transforms.ToTensor()),
@@ -328,6 +335,8 @@ def plot_saliency_map():
 
     # Get the first image and label from the dataset
     sample_image, y_train = next(iter(cifar10_train))
+    sample_image = sample_image[0].unsqueeze(0)  # Select the first image and add batch dimension
+    y_train = y_train[0]  # Select the corresponding label
 
     # Define preprocessing transformations
     preprocess = transforms.Compose([
@@ -335,14 +344,15 @@ def plot_saliency_map():
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
 
-    # Convert the sample image to a PIL Image and preprocess it
-    sample_image = preprocess(sample_image.squeeze(0)).unsqueeze(0)
-    # Define a pre-trained model (e.g., ResNet18) and fine-tune it on CIFAR-10
+    # Preprocess the sample image
+    sample_image = preprocess(sample_image)
 
+    # Define a pre-trained model (e.g., ResNet18) and fine-tune it on CIFAR-10
     model = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
     model.fc = torch.nn.Linear(model.fc.in_features, 10)  # Adjust the final layer for CIFAR-10 (10 classes)
     model = model.eval()  # Set model to evaluation mode
-
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("Using device:", device)
     # Check if the fine-tuned weights exist
     if not os.path.exists('cifar10_resnet18.pth'):
         # Fine-tune the model on CIFAR-10
@@ -350,15 +360,14 @@ def plot_saliency_map():
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
         # Training loop (quick fine-tuning for a few epochs)
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print("Using device:", device)
+        
         model = model.to(device)  # Move model to GPU if available
         criterion = criterion.to(device)  # Move criterion to GPU if available
 
-        for epoch in range(1):  # Only 1 epochs for quick fine-tuning
+        for epoch in range(1):  # Only 1 epoch for quick fine-tuning
             model.train()
             epoch_loss = 0.0
-            with tqdm(cifar10_train, desc=f"Epoch {epoch + 1}/5", unit="batch") as progress_bar:
+            with tqdm(cifar10_train, desc=f"Epoch {epoch + 1}/x", unit="batch") as progress_bar:
                 for images, labels in progress_bar:
                     images = preprocess(images).to(device)  # Preprocess and move to device
                     labels = labels.to(device)
@@ -375,25 +384,23 @@ def plot_saliency_map():
     # Load the fine-tuned weights
     model.load_state_dict(torch.load('cifar10_resnet18.pth'))
 
-    # Convert labels to PyTorch tensor
-    y_train = torch.tensor(y_train, dtype=torch.long).squeeze()
-
     # Compute saliency map using Captum
     saliency = Saliency(model)
     sample_image.requires_grad_()  # Enable gradients for the input
+    sample_image = sample_image.to(device)  # Move to device
+    model = model.to(device)  # Ensure model is on the same device as the input
     output = model(sample_image)
-    target_class = torch.argmax(
-        output, dim=1
-    )
-    saliency_map = saliency.attribute(sample_image, target=target_class.item()).squeeze().detach().numpy()
+    target_class = torch.argmax(output, dim=1)
+    saliency_map = saliency.attribute(sample_image, target=target_class.item()).squeeze().cpu().detach().numpy()
 
     # Plot the image and saliency map side by side
     fig, axes = plt.subplots(1, 2, figsize=(10, 5))
 
     # Original image
-    axes[0].imshow(sample_image.squeeze().permute(1, 2, 0).detach().numpy() * 0.5 + 0.5)  # Denormalize for visualization
-    axes[0].set_title(f"Original Image (Label: {cifar10_train.dataset.classes[y_train.item()]})")
+    axes[0].imshow(sample_image[0].permute(1, 2, 0).cpu().detach().numpy() * 0.5 + 0.5)  # Denormalize for visualization
+    axes[0].set_title(f"Original Image (Label: {cifar10_train.dataset.classes[y_train]})")
     axes[0].axis('off')
+
     # Saliency map
     axes[1].imshow(saliency_map.mean(axis=0), cmap='hot')
     axes[1].set_title("Saliency Map")
@@ -406,16 +413,16 @@ def plot_saliency_map():
 # 9. Integrated Gradients with Captum
 def plot_integrated_gradients():
     """
-    Generates and saves an Integrated Gradients visualization for a CNN trained on the MNIST dataset.
+    Generates and saves an Integrated Gradients visualization for a CNN trained on the CIFAR-10 dataset.
 
-    This function trains a simple CNN on the MNIST dataset, computes the Integrated Gradients
+    This function uses a pre-trained ResNet18 model fine-tuned on CIFAR-10, computes the Integrated Gradients
     for a sample image, and saves the visualization as "images/integrated_gradients.png".
 
     Note:
         - The "images" directory must exist prior to saving the plot.
 
     Dependencies:
-        - TensorFlow/Keras
+        - PyTorch
         - Captum
         - Matplotlib
 
@@ -430,6 +437,8 @@ def plot_integrated_gradients():
 
     # Get the first image and label from the dataset
     sample_image, y_train = next(iter(cifar10_train))
+    sample_image = sample_image[0].unsqueeze(0)  # Select the first image and add batch dimension
+    y_train = y_train[0]  # Select the corresponding label
 
     # Define preprocessing transformations
     preprocess = transforms.Compose([
@@ -437,14 +446,16 @@ def plot_integrated_gradients():
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
 
-    # Convert the sample image to a PIL Image and preprocess it
-    sample_image = preprocess(sample_image.squeeze(0)).unsqueeze(0)
+    # Preprocess the sample image
+    sample_image = preprocess(sample_image)
 
     # Define a pre-trained model (e.g., ResNet18) and fine-tune it on CIFAR-10
     model = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
     model.fc = torch.nn.Linear(model.fc.in_features, 10)  # Adjust the final layer for CIFAR-10 (10 classes)
     model = model.eval()  # Set model to evaluation mode
-
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("Using device:", device)
     # Check if the fine-tuned weights exist
     if not os.path.exists('cifar10_resnet18.pth'):
         # Fine-tune the model on CIFAR-10
@@ -452,15 +463,13 @@ def plot_integrated_gradients():
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
         # Training loop (quick fine-tuning for a few epochs)
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print("Using device:", device)
         model = model.to(device)  # Move model to GPU if available
         criterion = criterion.to(device)  # Move criterion to GPU if available
 
-        for epoch in range(1):  # Only 1 epochs for quick fine-tuning
+        for epoch in range(1):  # Only 1 epoch for quick fine-tuning
             model.train()
             epoch_loss = 0.0
-            with tqdm(cifar10_train, desc=f"Epoch {epoch + 1}/5", unit="batch") as progress_bar:
+            with tqdm(cifar10_train, desc=f"Epoch {epoch + 1}/x", unit="batch") as progress_bar:
                 for images, labels in progress_bar:
                     images = preprocess(images).to(device)  # Preprocess and move to device
                     labels = labels.to(device)
@@ -477,22 +486,21 @@ def plot_integrated_gradients():
     # Load the fine-tuned weights
     model.load_state_dict(torch.load('cifar10_resnet18.pth'))
 
-    # Convert labels to PyTorch tensor
-    y_train = torch.tensor(y_train, dtype=torch.long).squeeze()
-
     # Compute Integrated Gradients using Captum
     ig = IntegratedGradients(model)
     sample_image.requires_grad_()  # Enable gradients for the input
+    sample_image = sample_image.to(device)  # Move to device
+    model = model.to(device)  # Ensure model is on the same device as the input
     output = model(sample_image)
     target_class = torch.argmax(output, dim=1)
-    attributions = ig.attribute(sample_image, target=target_class.item(), n_steps=50).squeeze().detach().numpy()
+    attributions = ig.attribute(sample_image, target=target_class.item(), n_steps=50).squeeze().cpu().detach().numpy()
 
     # Plot the original image and attributions
     fig, axes = plt.subplots(1, 2, figsize=(10, 5))
 
     # Original image
-    axes[0].imshow(sample_image.squeeze().permute(1, 2, 0).detach().numpy() * 0.5 + 0.5)  # Denormalize for visualization
-    axes[0].set_title(f"Original Image (Label: {cifar10_train.dataset.classes[y_train.item()]})")
+    axes[0].imshow(sample_image[0].permute(1, 2, 0).cpu().detach().numpy() * 0.5 + 0.5)  # Denormalize for visualization
+    axes[0].set_title(f"Original Image (Label: {cifar10_train.dataset.classes[y_train]})")
     axes[0].axis('off')
 
     # Integrated Gradients

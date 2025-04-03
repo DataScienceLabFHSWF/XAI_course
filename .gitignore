@@ -48,3 +48,5 @@ xai/
 # .DS_Store files
 .DS_Store
 data
+# cifar10
+cifar10*
