@@ -13,3 +13,6 @@ lime
 quantus
 jupyter 
 ipykernel
+torchcam
+torchvision
+torchaudio
