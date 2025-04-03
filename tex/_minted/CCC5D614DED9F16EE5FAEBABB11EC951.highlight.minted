@@ -1,0 +1,19 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{torchcam}\PYG{n+nn}{.}\PYG{n+nn}{utils}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{overlay\PYGZus{}mask}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{PIL}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{Image}
+
+\PYG{c+c1}{\PYGZsh{} Initialize Grad\PYGZhy{}CAM}
+\PYG{n}{cam\PYGZus{}extractor} \PYG{o}{=} \PYG{n}{GradCAM}\PYG{p}{(}\PYG{n}{model}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{layer4}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Process sample image}
+\PYG{n}{img} \PYG{o}{=} \PYG{n}{Image}\PYG{o}{.}\PYG{n}{open}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{sample\PYGZus{}airplane.jpg}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{inputs} \PYG{o}{=} \PYG{n}{transform}\PYG{p}{(}\PYG{n}{img}\PYG{p}{)}\PYG{o}{.}\PYG{n}{unsqueeze}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Generate heatmap}
+\PYG{n}{out} \PYG{o}{=} \PYG{n}{model}\PYG{p}{(}\PYG{n}{inputs}\PYG{p}{)}
+\PYG{n}{activation\PYGZus{}map} \PYG{o}{=} \PYG{n}{cam\PYGZus{}extractor}\PYG{p}{(}\PYG{n}{out}\PYG{o}{.}\PYG{n}{squeeze}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{o}{.}\PYG{n}{argmax}\PYG{p}{(}\PYG{p}{)}\PYG{o}{.}\PYG{n}{item}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{out}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Overlay on image}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{overlay\PYGZus{}mask}\PYG{p}{(}\PYG{n}{img}\PYG{p}{,} \PYG{n}{activation\PYGZus{}map}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,} \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.5}\PYG{p}{)}
+\PYG{n}{result}\PYG{o}{.}\PYG{n}{show}\PYG{p}{(}\PYG{p}{)}
+\end{MintedVerbatim}

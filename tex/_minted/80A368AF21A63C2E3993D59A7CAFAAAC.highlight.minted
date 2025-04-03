@@ -1,0 +1,15 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{bertviz}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{head\PYGZus{}view}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{transformers}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{BertModel}\PYG{p}{,} \PYG{n}{BertTokenizer}
+
+\PYG{n}{model} \PYG{o}{=} \PYG{n}{BertModel}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bert\PYGZhy{}base\PYGZhy{}uncased}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{output\PYGZus{}attentions}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+\PYG{n}{tokenizer} \PYG{o}{=} \PYG{n}{BertTokenizer}\PYG{o}{.}\PYG{n}{from\PYGZus{}pretrained}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bert\PYGZhy{}base\PYGZhy{}uncased}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+\PYG{n}{text} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{The cat sat on the mat because it was tired.}\PYG{l+s+s2}{\PYGZdq{}}
+\PYG{n}{inputs} \PYG{o}{=} \PYG{n}{tokenizer}\PYG{o}{.}\PYG{n}{encode}\PYG{p}{(}\PYG{n}{text}\PYG{p}{,} \PYG{n}{return\PYGZus{}tensors}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{pt}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{outputs} \PYG{o}{=} \PYG{n}{model}\PYG{p}{(}\PYG{n}{inputs}\PYG{p}{)}
+\PYG{n}{attention} \PYG{o}{=} \PYG{n}{outputs}\PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]}  \PYG{c+c1}{\PYGZsh{} Tuple of attention tensors}
+
+\PYG{c+c1}{\PYGZsh{} Visualize}
+\PYG{n}{head\PYGZus{}view}\PYG{p}{(}\PYG{n}{attention}\PYG{p}{,} \PYG{n}{tokenizer}\PYG{o}{.}\PYG{n}{convert\PYGZus{}ids\PYGZus{}to\PYGZus{}tokens}\PYG{p}{(}\PYG{n}{inputs}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)}
+\end{MintedVerbatim}

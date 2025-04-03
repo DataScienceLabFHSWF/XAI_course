@@ -1,0 +1,12 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{captum}\PYG{n+nn}{.}\PYG{n+nn}{attr}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{LayerIntegratedGradients}
+
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{attribute}\PYG{p}{(}\PYG{n}{model}\PYG{p}{,} \PYG{n}{inputs}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{lig} \PYG{o}{=} \PYG{n}{LayerIntegratedGradients}\PYG{p}{(}\PYG{n}{model}\PYG{p}{,} \PYG{n}{model}\PYG{o}{.}\PYG{n}{model}\PYG{o}{.}\PYG{n}{layers}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+    \PYG{n}{attributions} \PYG{o}{=} \PYG{n}{lig}\PYG{o}{.}\PYG{n}{attribute}\PYG{p}{(}
+        \PYG{n}{inputs}\PYG{o}{=}\PYG{n}{inputs}\PYG{o}{.}\PYG{n}{input\PYGZus{}ids}\PYG{p}{,}
+        \PYG{n}{baselines}\PYG{o}{=}\PYG{n}{tokenizer}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{n}{return\PYGZus{}tensors}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{pt}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{input\PYGZus{}ids}\PYG{p}{,}
+        \PYG{n}{target}\PYG{o}{=}\PYG{n}{outputs}
+    \PYG{p}{)}
+    \PYG{k}{return} \PYG{n}{attributions}
+\end{MintedVerbatim}
