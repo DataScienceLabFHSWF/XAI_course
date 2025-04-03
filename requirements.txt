@@ -1,6 +1,6 @@
+matplotlib
 numpy
 pandas
-matplotlib
 scikit-learn
 tensorflow
 torch
@@ -11,7 +11,6 @@ xgboost
 shap
 lime
 quantus
-jupyter 
 ipykernel
 torchcam
 torchvision
