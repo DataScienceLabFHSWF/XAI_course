@@ -5,6 +5,9 @@ This repository serves as a companion to our Explainable AI (xAI) Course, heavil
 Inside, you'll find:
 
 - Lecture Notes & Slides summarizing key xAI techniques
+
+[Explainable AI (xAI) Course – Slides](https://github.com/FNeubuerger/xai-course-slides).
+
   
 - Hands-on Notebooks demonstrating real-world interpretability methods
   
