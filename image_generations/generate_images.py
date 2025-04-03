@@ -37,8 +37,13 @@ from transformers import pipeline
 
 # PIL for image handling
 from PIL import Image
+import time
+from transformers import AutoTokenizer, AutoModel, utils
 
-
+# BertViz imports
+from bertviz import head_view
+from bertviz.transformers_neuron_view import BertModel, BertTokenizer
+from bertviz.neuron_view import show
 
 from tqdm import tqdm  # Import tqdm for progress tracking
 
@@ -512,44 +517,140 @@ def plot_integrated_gradients():
     plt.savefig("images/integrated_gradients.png")
     plt.close()
 
+# 10. LLM Interpretation with BertViz
+def plot_llm_interpretation_with_bertviz():
+    """
+    Generates and saves an LLM interpretation visualization using BertViz.
+
+    This function uses the Hugging Face Transformers library to load a pre-trained BERT model,
+    computes attention weights for a sample text, and visualizes the attention using BertViz's
+    head_view. The visualization is saved as an HTML file in the "images" directory.
+
+    Note:
+        - The "images" directory must exist prior to saving the file.
+
+    Dependencies:
+        - Transformers library
+        - BertViz
+
+    Saves:
+        An HTML file of the BertViz head view at "images/bertviz_llm_interpretation.html".
+    """
+
+    # Suppress standard warnings
+    utils.logging.set_verbosity_error()
+
+    # Load pre-trained BERT model and tokenizer
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    model = AutoModel.from_pretrained("bert-base-uncased", output_attentions=True)
+
+    # Define sample text
+    sample_text = "The quick brown fox jumps over the lazy dog."
+
+    # Tokenize input and compute attention
+    inputs = tokenizer.encode(sample_text, return_tensors='pt')
+    outputs = model(inputs)
+    attention = outputs[-1]  # Output includes attention weights when output_attentions=True
+    tokens = tokenizer.convert_ids_to_tokens(inputs[0])
+
+    # Generate BertViz head view
+    html_head_view = head_view(attention, tokens, html_action='return')
+
+    # Save the visualization as an HTML file
+    output_path = "images/bertviz_llm_interpretation.html"
+    with open(output_path, 'w') as file:
+        file.write(html_head_view.data)
+    # Generate BertViz neuron view
+    model_type = 'bert'
+    model_version = 'bert-base-uncased'
+    do_lower_case = True
+    sentence_a = "The cat sat on the mat"
+    sentence_b = "The cat lay on the rug"
+
+    # Load model and tokenizer for neuron view
+    model = BertModel.from_pretrained(model_version, output_attentions=True)
+    tokenizer = BertTokenizer.from_pretrained(model_version, do_lower_case=do_lower_case)
+
+    # Generate neuron view visualization
+    html_neuron_view = show(model, model_type, tokenizer, sentence_a, sentence_b, layer=2, head=0, html_action='return')
+
+    # Save the visualization as an HTML file
+    neuron_view_output_path = "images/bertviz_neuron_view.html"
+    with open(neuron_view_output_path, 'w') as file:
+        file.write(html_neuron_view.data)
+
+
+def is_file_outdated(file_path, days=7):
+    """
+    Check if a file is outdated based on the last modification time.
+
+    Args:
+        file_path (str): Path to the file.
+        days (int): Number of days to consider as the threshold.
+
+    Returns:
+        bool: True if the file is outdated or doesn't exist, False otherwise.
+    """
+    if not os.path.exists(file_path):
+        return True
+    last_modified_time = os.path.getmtime(file_path)
+    return (time.time() - last_modified_time) > (days * 86400)
+
 if __name__ == "__main__":  
     # Create directory for saving images
     output_dir = "images"
     os.makedirs(output_dir, exist_ok=True)
-    # Generate all images
-    print("Generating Decision Tree visualization...")
-    plot_decision_tree()
-    print("Decision Tree visualization saved.")
+    
 
-    print("Generating Feature Importance plot...")
-    plot_feature_importance()
-    print("Feature Importance plot saved.")
+    # Generate all images only if they don't exist or are outdated
+    if is_file_outdated("images/decision_trees.png"):
+        print("Generating Decision Tree visualization...")
+        plot_decision_tree()
+        print("Decision Tree visualization saved.")
 
-    print("Generating Partial Dependence Plot (PDP)...")
-    plot_pdp()
-    print("Partial Dependence Plot saved.")
+    if is_file_outdated("images/feature_importance.png"):
+        print("Generating Feature Importance plot...")
+        plot_feature_importance()
+        print("Feature Importance plot saved.")
 
-    print("Generating SHAP Values plot...")
-    plot_shap_values()
-    print("SHAP Values plot saved.")
+    if is_file_outdated("images/pdp.png"):
+        print("Generating Partial Dependence Plot (PDP)...")
+        plot_pdp()
+        print("Partial Dependence Plot saved.")
 
-    print("Generating LIME explanation plot...")
-    plot_lime()
-    print("LIME explanation plot saved.")
+    if is_file_outdated("images/shap_values.png"):
+        print("Generating SHAP Values plot...")
+        plot_shap_values()
+        print("SHAP Values plot saved.")
 
-    print("Generating CNN Feature Maps visualization...")
-    plot_cnn_feature_maps()
-    print("CNN Feature Maps visualization saved.")
+    if is_file_outdated("images/lime.png"):
+        print("Generating LIME explanation plot...")
+        plot_lime()
+        print("LIME explanation plot saved.")
 
-    print("Generating LLM Explanation plot...")
-    plot_llm_explanation()
-    print("LLM Explanation plot saved.")
+    if is_file_outdated("images/cnn_feature_maps.png"):
+        print("Generating CNN Feature Maps visualization...")
+        plot_cnn_feature_maps()
+        print("CNN Feature Maps visualization saved.")
 
-    print("Generating Saliency Map...")
-    plot_saliency_map()
-    print("Saliency Map saved.")
-    print("Generating Integrated Gradients plot...")
-    plot_integrated_gradients()
-    print("Integrated Gradients plot saved.")
+    if is_file_outdated("images/llm_explanation.png"):
+        print("Generating LLM Explanation plot...")
+        plot_llm_explanation()
+        print("LLM Explanation plot saved.")
+
+    if is_file_outdated("images/saliency_map.png"):
+        print("Generating Saliency Map...")
+        plot_saliency_map()
+        print("Saliency Map saved.")
+
+    if is_file_outdated("images/integrated_gradients.png"):
+        print("Generating Integrated Gradients plot...")
+        plot_integrated_gradients()
+        print("Integrated Gradients plot saved.")
+
+    if is_file_outdated("images/bertviz_llm_interpretation.hmtl"):
+        print("Generating LLM Interpretation with BertViz...")
+        plot_llm_interpretation_with_bertviz()
+        print("LLM Interpretation with BertViz saved.")
     # Print completion message
     print("All images generated and saved in the 'images' directory.")

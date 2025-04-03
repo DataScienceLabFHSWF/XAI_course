@@ -19,3 +19,4 @@ ipykernel
 torchcam
 tf-keras
 transformers
+bertviz
