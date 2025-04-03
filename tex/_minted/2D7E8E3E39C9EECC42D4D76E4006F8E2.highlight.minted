@@ -1,7 +1,0 @@
-\begin{MintedVerbatim}[commandchars=\\\{\}]
-\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{quantus}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{FaithfulnessCorrelation}
-
-\PYG{n}{metric} \PYG{o}{=} \PYG{n}{FaithfulnessCorrelation}\PYG{p}{(}\PYG{p}{)}
-\PYG{n}{scores} \PYG{o}{=} \PYG{n}{metric}\PYG{p}{(}\PYG{n}{model}\PYG{p}{,} \PYG{n}{inputs}\PYG{p}{,} \PYG{n}{out}\PYG{o}{.}\PYG{n}{argmax}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,}
-               \PYG{p}{[}\PYG{n}{activation\PYGZus{}map}\PYG{o}{.}\PYG{n}{numpy}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{attr}\PYG{o}{.}\PYG{n}{detach}\PYG{p}{(}\PYG{p}{)}\PYG{o}{.}\PYG{n}{numpy}\PYG{p}{(}\PYG{p}{)}\PYG{p}{]}\PYG{p}{)}
-\end{MintedVerbatim}

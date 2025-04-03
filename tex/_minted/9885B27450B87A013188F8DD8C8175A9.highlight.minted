@@ -1,3 +1,0 @@
-\begin{MintedVerbatim}[commandchars=\\\{\}]
-pip\PYG{+w}{ }install\PYG{+w}{ }bertviz\PYG{+w}{ }transformers
-\end{MintedVerbatim}

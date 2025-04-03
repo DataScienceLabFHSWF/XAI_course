@@ -1,9 +1,0 @@
-\begin{MintedVerbatim}[commandchars=\\\{\}]
-\PYG{c+c1}{\PYGZsh{} Starter code}
-\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{sklearn}\PYG{n+nn}{.}\PYG{n+nn}{datasets}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{load\PYGZus{}boston}
-\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{sklearn}\PYG{n+nn}{.}\PYG{n+nn}{linear\PYGZus{}model}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{LinearRegression}\PYG{p}{,} \PYG{n}{Lasso}
-
-\PYG{n}{data} \PYG{o}{=} \PYG{n}{load\PYGZus{}boston}\PYG{p}{(}\PYG{p}{)}
-\PYG{n}{X}\PYG{p}{,} \PYG{n}{y} \PYG{o}{=} \PYG{n}{data}\PYG{o}{.}\PYG{n}{data}\PYG{p}{,} \PYG{n}{data}\PYG{o}{.}\PYG{n}{target}
-\PYG{c+c1}{\PYGZsh{} Add your implementation here}
-\end{MintedVerbatim}

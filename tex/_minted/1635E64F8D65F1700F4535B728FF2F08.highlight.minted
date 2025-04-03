@@ -1,4 +1,0 @@
-\begin{MintedVerbatim}[commandchars=\\\{\}]
-\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{sklearn}\PYG{n+nn}{.}\PYG{n+nn}{ensemble}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{RandomForestClassifier}
-\PYG{c+c1}{\PYGZsh{} Starter code for data loading}
-\end{MintedVerbatim}

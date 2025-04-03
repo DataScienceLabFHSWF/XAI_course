@@ -1,5 +1,0 @@
-\begin{MintedVerbatim}[commandchars=\\\{\}]
-\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{shap}
-\PYG{n}{explainer} \PYG{o}{=} \PYG{n}{shap}\PYG{o}{.}\PYG{n}{TreeExplainer}\PYG{p}{(}\PYG{n}{model}\PYG{p}{)}
-\PYG{n}{shap\PYGZus{}values} \PYG{o}{=} \PYG{n}{explainer}\PYG{o}{.}\PYG{n}{shap\PYGZus{}values}\PYG{p}{(}\PYG{n}{X\PYGZus{}test}\PYG{p}{)}
-\end{MintedVerbatim}

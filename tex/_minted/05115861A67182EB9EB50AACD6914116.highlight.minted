@@ -1,8 +1,0 @@
-\begin{MintedVerbatim}[commandchars=\\\{\}]
-\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{captum}\PYG{n+nn}{.}\PYG{n+nn}{attr}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{IntegratedGradients}
-
-\PYG{n}{ig} \PYG{o}{=} \PYG{n}{IntegratedGradients}\PYG{p}{(}\PYG{n}{model}\PYG{p}{)}
-\PYG{n}{attributions} \PYG{o}{=} \PYG{n}{ig}\PYG{o}{.}\PYG{n}{attribute}\PYG{p}{(}\PYG{n}{inputs}\PYG{p}{,} \PYG{n}{target}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,}
-                           \PYG{n}{n\PYGZus{}steps}\PYG{o}{=}\PYG{l+m+mi}{50}\PYG{p}{,}
-                           \PYG{n}{return\PYGZus{}convergence\PYGZus{}delta}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
-\end{MintedVerbatim}
