@@ -11,3 +11,5 @@ xgboost
 shap
 lime
 quantus
+jupyter 
+ipykernel
