@@ -4,13 +4,13 @@ This repository serves as a companion to our Explainable AI (xAI) Course, heavil
 
 Inside, you'll find:
 
-    Lecture Notes & Slides summarizing key xAI techniques
+- Lecture Notes & Slides summarizing key xAI techniques
+  
+- Hands-on Notebooks demonstrating real-world interpretability methods
+  
+- Code Implementations of SHAP, LIME, Feature Importance, and more
 
-    Hands-on Notebooks demonstrating real-world interpretability methods
-
-    Code Implementations of SHAP, LIME, Feature Importance, and more
-
-    Resources & Further Readings to deepen your understanding
+- Resources & Further Readings to deepen your understanding
 
 Whether you're a researcher, practitioner, or enthusiast, this repository will help you master the art of making machine learning models more interpretable and accountable. 🚀
 ==========
