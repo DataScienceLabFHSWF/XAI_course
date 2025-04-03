@@ -24,13 +24,14 @@ import torchvision
 import torchvision.transforms as transforms
 import torchvision.models as models
 from torchvision.models import ResNet18_Weights
-from captum.attr import Saliency
+from captum.attr import Saliency, IntegratedGradients
 
 # Hugging Face Transformers
 from transformers import pipeline
 
 # PIL for image handling
 from PIL import Image
+
 
 from tqdm import tqdm  # Import tqdm for progress tracking
 
@@ -322,7 +323,7 @@ def plot_saliency_map():
     # Load CIFAR-10 dataset using PyTorch utilities
     cifar10_train = torch.utils.data.DataLoader(
         torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transforms.ToTensor()),
-        batch_size=1, shuffle=False
+        batch_size=256, shuffle=False
     )
 
     # Get the first image and label from the dataset
@@ -402,6 +403,73 @@ def plot_saliency_map():
     plt.savefig("images/saliency_map.png")
     plt.close()
 
+# 9. Integrated Gradients with Captum
+def plot_integrated_gradients():
+    """
+    Generates and saves an Integrated Gradients visualization for a CNN trained on the MNIST dataset.
+
+    This function trains a simple CNN on the MNIST dataset, computes the Integrated Gradients
+    for a sample image, and saves the visualization as "images/integrated_gradients.png".
+
+    Note:
+        - The "images" directory must exist prior to saving the plot.
+
+    Dependencies:
+        - TensorFlow/Keras
+        - Captum
+        - Matplotlib
+
+    Raises:
+        FileNotFoundError: If the "images" directory does not exist.
+    """
+    # Load MNIST dataset
+    (X_train, y_train), _ = mnist.load_data()
+    X_train = X_train.reshape(-1, 28, 28, 1) / 255.0
+    y_train = to_categorical(y_train)
+
+    # Define a simple CNN
+    model = Sequential([
+        Conv2D(8, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+        Flatten(),
+        Dense(10, activation='softmax')
+    ])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.fit(X_train, y_train, epochs=1, batch_size=128, verbose=0)
+
+    # Convert Keras model to PyTorch
+    class PyTorchModel(torch.nn.Module):
+        def __init__(self, keras_model):
+            super(PyTorchModel, self).__init__()
+            self.keras_model = keras_model
+
+        def forward(self, x):
+            x = x.permute(0, 2, 3, 1).detach().numpy()  # Convert to NHWC for Keras
+            preds = self.keras_model.predict(x)
+            return torch.tensor(preds)
+
+    pytorch_model = PyTorchModel(model)
+
+    # Prepare a sample image
+    sample_image = torch.tensor(X_train[0:1].transpose(0, 3, 1, 2), dtype=torch.float32)  # Convert to NCHW
+    target_class = torch.argmax(torch.tensor(y_train[0]))
+
+    # Compute Integrated Gradients
+    ig = IntegratedGradients(pytorch_model)
+    attributions = ig.attribute(sample_image, target=target_class.item(), n_steps=50).squeeze().detach().numpy()
+
+    # Plot the original image and attributions
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    axes[0].imshow(sample_image.squeeze().permute(1, 2, 0).numpy(), cmap='gray')
+    axes[0].set_title("Original Image")
+    axes[0].axis('off')
+    axes[1].imshow(attributions.mean(axis=0), cmap='hot')
+    axes[1].set_title("Integrated Gradients")
+    axes[1].axis('off')
+
+    plt.tight_layout()
+    plt.savefig("images/integrated_gradients.png")
+    plt.close()
+
 if __name__ == "__main__":  
     # Create directory for saving images
     output_dir = "images"
@@ -438,5 +506,8 @@ if __name__ == "__main__":
     print("Generating Saliency Map...")
     plot_saliency_map()
     print("Saliency Map saved.")
+    print("Generating Integrated Gradients plot...")
+    plot_integrated_gradients()
+    print("Integrated Gradients plot saved.")
     # Print completion message
     print("All images generated and saved in the 'images' directory.")
