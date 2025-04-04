@@ -648,7 +648,7 @@ if __name__ == "__main__":
         plot_integrated_gradients()
         print("Integrated Gradients plot saved.")
 
-    if is_file_outdated("images/bertviz_llm_interpretation.hmtl"):
+    if is_file_outdated("images/bertviz_llm_interpretation.html"):
         print("Generating LLM Interpretation with BertViz...")
         plot_llm_interpretation_with_bertviz()
         print("LLM Interpretation with BertViz saved.")
