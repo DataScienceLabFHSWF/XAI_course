@@ -72,4 +72,4 @@ Using other people’s text or figures without attribution is plagiarism, and is
 ## Data and Copyright
 
 Data sets provided for this class have been collected by me with the permsission of its owners. Your are allowed to use the data set for tasks within this class, and may work with it on your own. 
-It is not allowed to copy, alter, reproduce or change elements of these data sets on your own or present alterations or variations of any manner as your own work. Do not reproduce or distribute any material from these pages to other locations and/or persons. 
+It is not allowed to copy, alter, reproduce or change elements of these data sets on your own or present alterations or variations of any manner 

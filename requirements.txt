@@ -1,0 +1,22 @@
+matplotlib
+numpy
+pandas
+scikit-learn
+tensorflow
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch
+torchvision
+torchaudio
+seaborn
+jupyter
+notebook
+xgboost
+shap
+lime
+captum
+quantus
+ipykernel
+torchcam
+tf-keras
+transformers
+bertviz
